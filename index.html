@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2563eb">
+    <title>BrightSpear Job Workflow</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQnJpZ2h0U3BlYXIgV29ya2Zsb3ciLCJzaG9ydF9uYW1lIjoiQnJpZ2h0U3BlYXIiLCJzdGFydF91cmwiOiIvIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzJhMmEyYSIsInRoZW1lX2NvbG9yIjoiIzI1NjNlYiJ9">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%232563eb' width='100' height='100'/><text y='75' x='50' text-anchor='middle' font-size='60' fill='white' font-family='Arial'>BS</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --bg-dark: #1a1a1a;
+            --bg-card: #2a2a2a;
+            --bg-input: #333333;
+            --text: #ffffff;
+            --text-dim: #a0a0a0;
+            --border: #404040;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .service-selector {
+            padding: 20px;
+            background: var(--bg-card);
+            margin: 20px;
+            border-radius: 12px;
+        }
+
+        .service-selector label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-dim);
+        }
+
+        .service-selector select {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 16px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--bg-card);
+            margin: 20px 20px 0 20px;
+            border-radius: 12px 12px 0 0;
+            overflow-x: auto;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .content {
+            margin: 0 20px 20px 20px;
+            background: var(--bg-card);
+            border-radius: 0 0 12px 12px;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .phase {
+            display: none;
+        }
+
+        .phase.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 20px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px;
+            margin: 8px 0;
+            background: var(--bg-input);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .checklist-item:active {
+            transform: scale(0.98);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: var(--success);
+        }
+
+        .checklist-item label {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.5;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checklist-item.checked {
+            opacity: 0.6;
+        }
+
+        .checklist-item.checked label {
+            text-decoration: line-through;
+        }
+
+        .notes-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border);
+        }
+
+        .notes-section textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 14px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .notes-section textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .reminder-box {
+            background: var(--bg-input);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+
+        .reminder-box h4 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .reminder-box textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 13px;
+            font-family: monospace;
+            min-height: 80px;
+        }
+
+        .reminder-box button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .reminder-box button:active {
+            background: var(--primary-dark);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--border);
+            margin: 0 20px 20px 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 20px;
+            }
+            .tab {
+                font-size: 11px;
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>BrightSpear Workflow</h1>
+        <div class="subtitle">Job Checklist & Process Guide</div>
+    </div>
+
+    <div class="service-selector">
+        <label>Select Job Type:</label>
+        <select id="serviceType">
+            <option value="">Choose a service...</option>
+            <option value="gutter">Gutter Cleaning</option>
+            <option value="driveway">Pressure Washing - Driveway/Concrete</option>
+            <option value="house-vinyl">House Wash - Vinyl/Painted</option>
+            <option value="house-brick">House Wash - Brick/Stone</option>
+            <option value="wood">Wood Deck/Fence Wash</option>
+            <option value="sidewalk">Sidewalk/Patio Wash</option>
+            <option value="roof">Roof Washing</option>
+        </select>
+    </div>
+
+    <div class="progress-bar" id="progressBar" style="display:none;">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="tabs" id="tabs" style="display:none;">
+        <div class="tab active" data-phase="pre-job">Pre-Job</div>
+        <div class="tab" data-phase="on-site">On-Site</div>
+        <div class="tab" data-phase="post-job">Post-Job</div>
+        <div class="tab" data-phase="follow-up">Follow-Up</div>
+    </div>
+
+    <div class="content" id="content">
+        <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <p>Select a job type above to begin your workflow checklist</p>
+        </div>
+    </div>
+
+    <script>
+        // Equipment checklists
+        const equipment = {
+            gutter: {
+                core: ['28ft extension ladder', 'Ladder stabilizer', 'Collapsible landscaping bag', 'Plastic putty knife', 'Leaf blower', 'Carabiner', 'Ratchet straps'],
+                downspout: ['Pressure washer', 'Pressure hose', 'Flexzilla hose'],
+                safety: ['Work gloves', 'Safety glasses/goggles', 'Water-resistant boots'],
+                supplies: ['Gas can (filled)', 'Trash bags (backup)']
+            },
+            driveway: {
+                core: ['Pressure washer', 'Surface cleaner', 'Pressure hose', 'Flexzilla hose', 'Turbo nozzle'],
+                chemical: ['5-gallon bucket', 'X-Jet with proportioner tips', 'Black tip (5:1 ratio)', 'Ball valve', 'Sodium hypochlorite (12.5%)', 'Surfactant', 'Pump sprayer'],
+                transport: ['Cargo hitch', 'Bungee cords', 'Ratchet straps'],
+                safety: ['Chemical-resistant gloves', 'Safety glasses/goggles', 'Water-resistant boots', 'Long pants'],
+                supplies: ['Gas can (filled)', 'Rags/towels']
+            },
+            'house-vinyl': {
+                core: ['Pressure washer', 'Pressure hose', 'Flexzilla hose', 'X-Jet with proportioner tips'],
+                chemical: ['5-gallon bucket', 'X-Jet with proportioner tips', 'Black tip (5:1 ratio)', 'Ball valve', 'Sodium hypochlorite (12.5%)', 'Surfactant', 'Pump sprayer (backup)'],
+                transport: ['Cargo hitch', 'Bungee cords', 'Ratchet straps'],
+                safety: ['Chemical-resistant gloves', 'Safety glasses/goggles', 'Water-resistant boots', 'Long sleeves', 'Mask', 'Head covering'],
+                supplies: ['Gas can (filled)', 'Tape (for outlets/doorbells)', 'Rags/towels']
+            },
+            'house-brick': {
+                core: ['Pressure washer', 'Pressure hose', 'Flexzilla hose', 'X-Jet with proportioner tips', 'Surface cleaner (if needed)'],
+                chemical: ['5-gallon bucket', 'X-Jet with proportioner tips', 'Black tip (5:1 ratio)', 'Ball valve', 'Sodium hypochlorite (12.5%)', 'Surfactant', 'Pump sprayer (backup)'],
+                transport: ['Cargo hitch', 'Bungee cords', 'Ratchet straps'],
+                safety: ['Chemical-resistant gloves', 'Safety glasses/goggles', 'Water-resistant boots', 'Long sleeves', 'Mask', 'Head covering'],
+                supplies: ['Gas can (filled)', 'Tape (for outlets/doorbells)', 'Rags/towels'],
+                notes: ['Watch mortar joints - avoid high pressure on mortar', 'Can use higher chemical concentration than vinyl']
+            },
+            wood: {
+                core: ['Pressure washer', 'Pressure hose', 'Flexzilla hose', 'Fan tip nozzle (NEVER turbo)'],
+                chemical: ['2-gallon pump sprayer OR 5-gallon bucket', 'X-Jet with Beige tip (10:1 ratio) for large jobs', 'Ball valve', 'Sodium hypochlorite (12.5%)', 'Surfactant'],
+                transport: ['Cargo hitch', 'Bungee cords', 'Ratchet straps'],
+                safety: ['Chemical-resistant gloves', 'Safety glasses/goggles', 'Water-resistant boots', 'Long sleeves', 'Mask'],
+                supplies: ['Gas can (filled)', 'Rags/towels'],
+                notes: ['TEST SPOT ALWAYS before full application', 'Lower pressure settings', 'Keep wand moving to avoid etching wood']
+            },
+            sidewalk: {
+                core: ['Pressure washer', 'Surface cleaner', 'Pressure hose', 'Flexzilla hose', 'Turbo nozzle'],
+                chemical: ['5-gallon bucket', 'X-Jet with proportioner tips', 'Black tip (5:1 ratio)', 'Ball valve', 'Sodium hypochlorite (12.5%)', 'Surfactant', 'Pump sprayer'],
+                transport: ['Cargo hitch', 'Bungee cords', 'Ratchet straps'],
+                safety: ['Chemical-resistant gloves', 'Safety glasses/goggles', 'Water-resistant boots', 'Long pants'],
+                supplies: ['Gas can (filled)', 'Rags/towels']
+            },
+            roof: {
+                core: ['Pressure washer', 'Pressure hose', 'Flexzilla hose', 'X-Jet with proportioner tips', '28ft extension ladder', 'Ladder stabilizer'],
+                chemical: ['5-gallon bucket', 'X-Jet with proportioner tips', 'Grey tip (2.5:1 ratio)', 'Ball valve', 'Sodium hypochlorite (12.5%)', 'Surfactant', 'Pump sprayer (backup)'],
+                transport: ['Cargo hitch', 'Bungee cords', 'Ratchet straps'],
+                safety: ['Chemical-resistant gloves', 'Safety glasses/goggles', 'Water-resistant boots', 'Long sleeves', 'Mask', 'Head covering', 'Harness/fall protection (if accessing roof)'],
+                supplies: ['Gas can (filled)', 'Tape (for vents/openings)', 'Rags/towels', 'Plastic sheeting (extensive plant protection)'],
+                notes: ['Requires soft wash system (low pressure)', 'DO NOT walk on wet roof', 'Pre-wet all plants extensively', 'Keep plants wet throughout']
+            }
+        };
+
+        // Workflow data
+        const workflow = {
+            'pre-job': {
+                title: 'Pre-Job Phase',
+                sections: {
+                    equipment: { title: 'Equipment Checklist', items: [] },
+                    forms: {
+                        title: 'Forms to Bring',
+                        items: ['Signed quote (if not already)', 'Service agreement (to sign on-site)', 'Blank invoice', 'Business cards', 'Yard sign (if permission granted)']
+                    },
+                    confirmation: {
+                        title: 'Client Confirmation',
+                        items: ['Day-before reminder text/call', 'Confirm access (gates, pets, water/power)', 'Confirm someone home for walkthrough']
+                    },
+                    prep: {
+                        title: 'Job Prep',
+                        items: ['Review job details from quote', 'Verify pricing', 'Check weather forecast', 'Plan route/travel time', 'Load vehicle (what you need first goes in last)']
+                    }
+                }
+            },
+            'on-site': {
+                title: 'On-Site Phase',
+                sections: {
+                    arrival: {
+                        title: 'Arrival & Setup',
+                        items: ['Introduce yourself to client', 'Confirm services to be performed', 'Walk property with client']
+                    },
+                    documentation: {
+                        title: 'Pre-Job Documentation',
+                        items: ['Take photos of pre-existing damage/conditions', 'Take BEFORE photos for marketing (mark spot for AFTER)', 'Point out concerns to client', 'Get client signature on service agreement', 'Discuss any changes from original quote']
+                    },
+                    preparation: {
+                        title: 'Site Preparation',
+                        items: ['Set up equipment', 'Close windows/doors if needed', 'Cover outlets/doorbells (house wash)', 'Pre-wet plants (for chemical applications)', 'Place yard sign (if permitted)']
+                    },
+                    work: { title: 'Work Process', items: [] },
+                    safety: {
+                        title: 'Safety Reminders',
+                        items: ['Stay aware of surroundings', 'Keep chemicals away from eyes/skin', 'Don\'t overreach on ladder', 'Watch for power lines', 'Hydrate regularly']
+                    }
+                }
+            },
+            'post-job': {
+                title: 'Post-Job Phase',
+                sections: {
+                    quality: {
+                        title: 'Quality Check',
+                        items: ['Walk the entire job area', 'Check for missed spots and damage', 'Verify all areas cleaned to standard', 'Touch up any problem areas immediately']
+                    },
+                    photos: {
+                        title: 'Before/After Photos',
+                        items: ['Take AFTER photos from same marked spots', 'Get wide shots showing full transformation', 'Get detail shots of dirty-to-clean areas', 'Ensure good lighting for marketing use']
+                    },
+                    cleanup: {
+                        title: 'Site Cleanup',
+                        items: ['Pack up all equipment', 'Remove yard sign (or leave if agreed)', 'Remove tape from outlets/doorbells', 'Dispose of debris properly (gutter)', 'Quick sweep of work area', 'Ensure no equipment/supplies left behind', 'Ensure all equipment properly sealed, stored and secured']
+                    },
+                    walkthrough: {
+                        title: 'Client Walkthrough',
+                        items: ['Walk property with client', 'Point out completed work', 'Address any concerns immediately', 'Show before/after photos if helpful', 'Confirm client is satisfied']
+                    },
+                    payment: {
+                        title: 'Payment & Documentation',
+                        items: ['Complete invoice with final pricing', 'Collect payment (Zelle/Venmo/Cash/Check)', 'Provide invoice/receipt', 'Ask if they need service agreement copy']
+                    },
+                    future: {
+                        title: 'Future Service Setup',
+                        items: ['Ask about future services', 'Give business cards for referrals', 'Mention bundle discounts if relevant', 'Note any recommended future work']
+                    }
+                }
+            },
+            'follow-up': {
+                title: 'Follow-Up Phase',
+                sections: {
+                    verification: {
+                        title: 'Payment Verification',
+                        items: ['Check: Deposit within 24hrs, verify clears in 3-5 days', 'Zelle/Venmo: Confirm funds received same day', 'Invoice sent: Follow up within 24hrs if no payment', '48hrs no payment: Second follow-up (firmer)', '1 week no payment: Consider collections']
+                    },
+                    thanks: {
+                        title: 'Same Day (within 2 hours)',
+                        items: ['Send thank you text (if paid)', 'OR send invoice with payment instructions']
+                    },
+                    reviews: {
+                        title: 'Within 24 Hours',
+                        items: ['Request Google review (ONLY after payment confirmed)', 'Request Nextdoor recommendation']
+                    },
+                    photos: {
+                        title: 'Photo Management',
+                        items: ['Upload before/after to portfolio', 'Post to Instagram/Facebook (with permission)', 'Tag location for visibility']
+                    },
+                    schedule: {
+                        title: 'Schedule Future Contact',
+                        items: ['Add to customer database/spreadsheet', 'Set reminder for follow-up', 'Note client preferences/concerns']
+                    },
+                    records: {
+                        title: 'Business Records',
+                        items: ['File signed service agreement', 'Save invoice copy', 'Mark payment as RECEIVED', 'Update revenue tracking', 'Note equipment issues/supply needs']
+                    }
+                }
+            }
+        };
+
+        // Work process steps for each service
+        const workProcess = {
+            gutter: [
+                'Set up ladder safely with stabilizer',
+                'Clear debris starting at downspouts',
+                'Bag debris',
+                'Flush downspouts',
+                'Visual inspection for damage'
+            ],
+            driveway: [
+                'Pre-wet concrete surface',
+                'Mix chemicals (use calculator app)',
+                'Apply chemicals, let dwell (10-15 min)',
+                'Surface clean main area',
+                'Go over edges/corners with turbo nozzle',
+                'Rinse thoroughly',
+                'Post-treat heavy stains with pump sprayer',
+                'Check for missed spots'
+            ],
+            'house-vinyl': [
+                'Pre-wet plants',
+                'Pre-wet house exterior',
+                'Mix chemicals (use calculator app)',
+                'Apply from bottom up',
+                'Let dwell (10-15 min - monitor plants, keep windows wet)',
+                'Rinse top to bottom',
+                'Keep plants AND windows wet throughout',
+                'Final rinse check'
+            ],
+            'house-brick': [
+                'Pre-wet plants',
+                'Pre-wet house exterior',
+                'Mix chemicals (use calculator app)',
+                'Apply from bottom up',
+                'Let dwell (10-15 min - monitor plants, keep windows wet)',
+                'Rinse top to bottom',
+                'Keep plants AND windows wet throughout',
+                'Watch mortar joints - avoid high pressure',
+                'Final rinse check'
+            ],
+            wood: [
+                'TEST SPOT FIRST - always!',
+                'Pre-wet surrounding plants/landscaping',
+                'Mix low-concentration chemicals (1.5% SH)',
+                'Apply with pump sprayer or X-Jet Beige tip',
+                'Let dwell (5-10 min max)',
+                'Use fan tip nozzle only (NEVER turbo)',
+                'Rinse with sweeping motion, keep wand moving',
+                'Low pressure - avoid etching wood',
+                'Check for even cleaning'
+            ],
+            sidewalk: [
+                'Pre-wet surface',
+                'Mix chemicals (use calculator app)',
+                'Apply chemicals, let dwell (10-15 min)',
+                'Surface clean main area',
+                'Go over edges/corners with turbo nozzle',
+                'Rinse thoroughly',
+                'Post-treat heavy stains with pump sprayer',
+                'Check for missed spots'
+            ],
+            roof: [
+                'Extensively cover/wet plants and ground landscaping',
+                'Mix chemicals (higher concentration - use calculator app)',
+                'Apply from ladder (DO NOT walk on wet roof)',
+                'Let dwell (10-15 min)',
+                'Monitor runoff',
+                'Light rinse if needed',
+                'Keep plants wet throughout'
+            ]
+        };
+
+        let currentService = '';
+        let currentPhase = 'pre-job';
+        let checklistState = {};
+        let jobNotes = {};
+
+        const serviceSelect = document.getElementById('serviceType');
+        const tabs = document.getElementById('tabs');
+        const content = document.getElementById('content');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+
+        serviceSelect.addEventListener('change', (e) => {
+            currentService = e.target.value;
+            if (currentService) {
+                loadService();
+            } else {
+                tabs.style.display = 'none';
+                progressBar.style.display = 'none';
+                content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><p>Select a job type above to begin your workflow checklist</p></div>';
+            }
+        });
+
+        function loadService() {
+            tabs.style.display = 'flex';
+            progressBar.style.display = 'block';
+            currentPhase = 'pre-job';
+            
+            // Initialize state if needed
+            if (!checklistState[currentService]) {
+                checklistState[currentService] = {};
+                jobNotes[currentService] = '';
+            }
+
+            renderPhase();
+            updateProgress();
+        }
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                currentPhase = e.target.dataset.phase;
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                renderPhase();
+            });
+        });
+
+        function renderPhase() {
+            const phaseData = workflow[currentPhase];
+            let html = `<h2 style="font-size: 20px; margin-bottom: 20px; color: var(--primary);">${phaseData.title}</h2>`;
+
+            for (const [sectionKey, section] of Object.entries(phaseData.sections)) {
+                html += `<div class="section-title">${section.title}</div>`;
+
+                let items = section.items;
+
+                // For equipment section in pre-job, build from equipment data
+                if (currentPhase === 'pre-job' && sectionKey === 'equipment') {
+                    const equipData = equipment[currentService];
+                    items = [];
+                    for (const [category, equipItems] of Object.entries(equipData)) {
+                        if (category === 'notes') continue;
+                        items.push(...equipItems);
+                    }
+                    if (equipData.notes) {
+                        items.push(...equipData.notes.map(note => `⚠️ ${note}`));
+                    }
+                }
+
+                // For work process in on-site, use service-specific steps
+                if (currentPhase === 'on-site' && sectionKey === 'work') {
+                    items = workProcess[currentService] || [];
+                }
+
+                items.forEach((item, idx) => {
+                    const itemId = `${currentPhase}-${sectionKey}-${idx}`;
+                    const checked = checklistState[currentService][itemId] || false;
+                    html += `
+                        <div class="checklist-item ${checked ? 'checked' : ''}">
+                            <input type="checkbox" id="${itemId}" ${checked ? 'checked' : ''} onchange="toggleCheck('${itemId}')">
+                            <label for="${itemId}">${item}</label>
+                        </div>
+                    `;
+                });
+            }
+
+            // Add notes section
+            html += `
+                <div class="notes-section">
+                    <div class="section-title">Job Notes</div>
+                    <textarea placeholder="Add notes for this job..." oninput="saveNotes(this.value)">${jobNotes[currentService] || ''}</textarea>
+                </div>
+            `;
+
+            // Add reminder generator for follow-up phase
+            if (currentPhase === 'follow-up') {
+                const serviceName = serviceSelect.options[serviceSelect.selectedIndex].text;
+                const followUpMonths = currentService === 'gutter' ? 6 : (currentService === 'roof' ? 24 : 12);
+                const reminderText = `Contact [Client Name] - ${serviceName} due (last service: ${new Date().toLocaleDateString()})`;
+                
+                html += `
+                    <div class="reminder-box">
+                        <h4>📅 Set Follow-Up Reminder</h4>
+                        <p style="font-size: 13px; margin-bottom: 10px; color: var(--text-dim);">Copy this text to your calendar for ${followUpMonths} months from now:</p>
+                        <textarea readonly>${reminderText}</textarea>
+                        <button onclick="copyReminder()">Copy to Clipboard</button>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = html;
+            updateProgress();
+        }
+
+        function toggleCheck(itemId) {
+            checklistState[currentService][itemId] = !checklistState[currentService][itemId];
+            localStorage.setItem('checklistState', JSON.stringify(checklistState));
+            renderPhase();
+        }
+
+        function saveNotes(value) {
+            jobNotes[currentService] = value;
+            localStorage.setItem('jobNotes', JSON.stringify(jobNotes));
+        }
+
+        function updateProgress() {
+            const allChecks = Object.keys(checklistState[currentService] || {});
+            const checked = allChecks.filter(key => checklistState[currentService][key]).length;
+            const total = allChecks.length;
+            const percent = total > 0 ? (checked / total) * 100 : 0;
+            progressFill.style.width = `${percent}%`;
+        }
+
+        function copyReminder() {
+            const textarea = document.querySelector('.reminder-box textarea');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Reminder copied to clipboard!');
+        }
+
+        // Load saved state
+        try {
+            checklistState = JSON.parse(localStorage.getItem('checklistState') || '{}');
+            jobNotes = JSON.parse(localStorage.getItem('jobNotes') || '{}');
+        } catch (e) {
+            checklistState = {};
+            jobNotes = {};
+        }
+    </script>
+</body>
+</html>
